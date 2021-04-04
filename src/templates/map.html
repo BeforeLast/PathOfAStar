@@ -1,79 +1,94 @@
-<html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-    <title>Polyline on the Map</title>
-    <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
-  </head>
-  <body>
-    <div style="width: 640px; height: 480px" id="mapContainer"></div>
-    <script>
-        var Lat = [];
-        var Lng = [];
-        var avgLat = 0.0;
-        var avgLng = 0.0;
-        var pointCount = 0;
+{% extends "layout.html" %}
+{% block content %}
+<div style="width: 640px; height: 480px" id="mapContainer"></div>
+<script>
+    var Lat = [];
+    var Lng = [];
+    var avgLat = 0.0;
+    var avgLng = 0.0;
+    var pointCount = 0;
 
-        // receive the points pass
-        var points = '{{ points|tojson|safe }}'.replace('[[','').replaceAll('[','').replace(']]','').split("], ");
-        points.forEach(iteratePoints);
-        function iteratePoints(val, idx, arr){
-            var LatLng = val.split(", ");
-            Lat.push(LatLng[0]);
-            Lng.push(LatLng[1]);
+    // receive the points pass
+    var points = '{{ points|tojson|safe }}'.replace('[[','').replaceAll('[','').replace(']]','').split("], ");
+    points.forEach(iteratePoints);
+    function iteratePoints(val, idx, arr){
+        var LatLng = val.split(", ");
+        Lat.push(LatLng[0]);
+        Lng.push(LatLng[1]);
 
-            avgLat += parseFloat(LatLng[0]);
-            avgLng += parseFloat(LatLng[1]);
-            pointCount++;
+        avgLat += parseFloat(LatLng[0]);
+        avgLng += parseFloat(LatLng[1]);
+        pointCount++;
+    }
+
+    // count the avg coordinate to center to
+    avgLat /= pointCount;
+    avgLng /= pointCount;
+
+    // draw the line
+    function addPolylineToMap(map) {
+        var lineString = new H.geo.LineString();
+        for (let i = 0; i<pointCount; i++){
+            lineString.pushPoint({lat:Lat[i], lng:Lng[i]});
+            var marker = new H.map.Marker({lat:Lat[i], lng:Lng[i]});
+            map.addObject(marker);
         }
 
-        // count the avg coordinate to center to
-        avgLat /= pointCount;
-        avgLng /= pointCount;
+        map.addObject(new H.map.Polyline(
+            lineString, { style: { lineWidth: 4 }}
+        ));
+    }
 
-        // draw the line
-        function addPolylineToMap(map) {
-            var lineString = new H.geo.LineString();
-            for (let i = 0; i<pointCount; i++){
-                lineString.pushPoint({lat:Lat[i], lng:Lng[i]});
-            }
+    // init the platform
+    var platform = new H.service.Platform({
+        'apikey': 'ktOMjYT0KrFXrOWL7Sxp475UB20KgVQtBpAnsTmgnTA'
+    });
 
-            map.addObject(new H.map.Polyline(
-                lineString, { style: { lineWidth: 4 }}
-            ));
-        }
+    // create a layer
+    var layer = platform.createDefaultLayers();
 
-        // init the platform
-        var platform = new H.service.Platform({
-            'apikey': 'ktOMjYT0KrFXrOWL7Sxp475UB20KgVQtBpAnsTmgnTA'
+    // instantiate (and display) a map object:
+    var map = new H.Map(
+        document.getElementById('mapContainer'),
+        layer.vector.normal.map,
+        {
+            zoom: 15,
+            center: { lat: avgLat, lng: avgLng },
+            pixelRatio: window.devicePixelRatio || 1
         });
 
-        // create a layer
-        var layer = platform.createDefaultLayers();
+    // add a resize listener to make sure that the map occupies the whole container
+    window.addEventListener('resize', () => map.getViewPort().resize());
 
-        // instantiate (and display) a map object:
-        var map = new H.Map(
-            document.getElementById('mapContainer'),
-            layer.vector.normal.map,
-            {
-                zoom: 15,
-                center: { lat: avgLat, lng: avgLng },
-                pixelRatio: window.devicePixelRatio || 1
-            });
+    // MapEvents enables the event system
+    // Behavior implements default interactions for pan/zoom (also on mobile touch environments)
+    var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+    
+    // Create the default UI components
+    var ui = H.ui.UI.createDefault(map, layer);
 
-        // MapEvents enables the event system
-        // Behavior implements default interactions for pan/zoom (also on mobile touch environments)
-        var behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-        
-        // Create the default UI components
-        var ui = H.ui.UI.createDefault(map, layer);
+    addPolylineToMap(map);
 
-        addPolylineToMap(map);
+</script>
+{% endblock content %}
 
-    </script>
-  </body>
-</html>
+{% block sideInfo %}
+<div class="col-md-4">
+    <div class="content-section">
+      <h3>Side Info</h3>
+      <p class='text-muted'>Berikut adalah beberapa informasi mengenai path yang terbentuk
+        <article class="media content-section">
+            <div class="media-body">
+                <div class="article-metadata">
+                    Documents used : 
+                </div>
+                <br>
+                <p>Lokasi asal : {{start}}</p>
+                <p>Lokasi tujuan : {{end}}</p>
+                <p>Jarak total yang ditempuh  : {{dist}}</p>
+            </div>
+        </article>
+      </p>
+    </div>
+</div>
+{% endblock sideInfo %}
