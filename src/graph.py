@@ -9,7 +9,7 @@ class Graph :
         self.nodes = []
 
     # add a node to the graph
-    # input :
+    # input
     #   Node : node
     # I.S. : nodes == [..]
     # F.S. : nodes == [..,node]
@@ -50,6 +50,10 @@ class Graph :
         return  self.calculateDistance(srcNodeName,trgNodeName) + self.calculateDistance(trgNodeName,goalNodeName)
 
     # fill the graph from an input file
+    # input 
+    #   string : fileName
+    # I.S. : self.nodes == [..]
+    # F.S. : self.nodes == [..,newnode1,newnode2,..,newnodeN]
     def fillGraphWithFile(self, fileName) :
         f = open(fileName,"r")
         readOut = f.readlines()
@@ -73,6 +77,10 @@ class Graph :
             i += 1
         f.close()
 
+    # get total cost from srcNodeName to trgNodeName with the goal goalNodeName
+    # input 
+    #   string : srcNodeName, goalNodeName
+    # output : -
     def AStar(self, srcNodeName, goalNodeName):
         ## PriorityQueue elements : (cost,currentNodeName,visitedNode)
         queue = PriorityQueue()
@@ -81,7 +89,6 @@ class Graph :
         temptup = (self.calculateDistance(srcNodeName,goalNodeName),srcNodeName,[srcNodeName])
         queue.enqueue(temptup)
 
-        ree = 1
         while len(queue)>0 and queue.queue[0][1] != goalNodeName:
             currentNode = queue.dequeue() # (cost,currentNodeName,visitedNode) - (float, string, [string])
 
@@ -107,14 +114,15 @@ class Graph :
 
                     queue.enqueue(temptup)
                     
-
-        if len(queue)>0:
+        if len(queue)>0: # found path from Source Node to Goal Node
             print("COST = ",end='')
             print(queue.queue[0][0])
 
             print("PATH = ",end='')
-            for nodeName in queue.queue[0][2]:
-                print(nodeName,end='-')
+            print(queue.queue[0][2][0],end='')
+            for nodeName in queue.queue[0][2][1:]:
+                print('-'+nodeName,end='')
+            print()
         
         else: # no path found from Source Node to Goal Node
             print("NO PATH FOUND")
