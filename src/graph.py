@@ -1,43 +1,53 @@
 import math
-
-class Point :
-    def __init__(self, x, y) :
-        self.x = x
-        self.y = y
-
-class Node :
-    def __init__(self, name, point) :
-        self.name = name
-        self.point = point
-
-class Edge :
-    def __init__(self, startNode, endNode, dist) :
-        self.startNode = startNode
-        self.endNode = endNode
-        self.dist = dist
+from typing import overload
+from location import *
+from node import *
+from prioqueue import *
 
 class Graph :
     def __init__(self) :
         self.nodes = []
-        self.edges = []
 
     # add a node to the graph
+    # input :
+    #   Node : node
+    # I.S. : nodes == [..]
+    # F.S. : nodes == [..,node]
     def addNode(self, node) :
         self.nodes.append(node)
 
-    # add an edge to the graph
-    def addEdge(self, edge) :
-        self.edges.append(edge)
+    # get node with the name of nodeName
+    # input
+    #   nodeName : string
+    # output : Location
+    def getNode(self, nodeName):
+        for node in self.nodes:
+            if node.name is nodeName:
+                return node
+        return None
+    
+    # get node location of a node with the name of nodeName
+    # input
+    #   nodeName : string
+    # output : Location
+    def getNodeLoc(self, nodeName):
+        if self.getNode(nodeName) == None:
+            return None
+        return self.getNode(nodeName).location
 
-    # returns an array of nodes adjancing the referenced node
-    def getAdjacents(self, node) :
-        res = []
-        for edge in edges :
-            if edge.startNode is node :
-                res.append(edge.endNode)
-            if edge.endNode is node :
-                res.append(edge.startNode)
-        return res
+    # calculate Euclidean Distance of 
+    # input
+    #   string : nodeName
+    # output : float
+    def calculateDistance(self, srcNodeName, trgNodeName):
+        return self.getNodeLoc(srcNodeName).euclideanDist(self.getNodeLoc(trgNodeName))
+
+    # get total cost from srcNodeName to trgNodeName with the goal goalNodeName
+    # input 
+    #   string : srcNodeName, trgNodeName, goalNodeName
+    # output : float
+    def calculateTotalCost(self, srcNodeName, trgNodeName, goalNodeName):
+        return  self.calculateDistance(srcNodeName,trgNodeName) + self.calculateDistance(trgNodeName,goalNodeName)
 
     # fill the graph from an input file
     def fillGraphWithFile(self, fileName) :
@@ -49,19 +59,62 @@ class Graph :
         # fill the nodes
         for i in range (1,nodeCount+1) :
             line = readOut[i].replace('\n','').split(' ')
-            P = Point(float(line[1]) , float(line[2]))
-            N = Node(line[0], P)
-            self.addNode(N)
+            Loc = Location(float(line[1]) , float(line[2]))
+            tempNode = Node(line[0], Loc)
+            self.addNode(tempNode)
 
         # fill the edges
-        for i in range(nodeCount+1, nodeCount*2+1) :
-            line = readOut[i].replace('\n','').split(' ')
-            N1 = self.nodes[i-nodeCount-1]
-            for j in range(nodeCount) :
-                if (line[j] == '1') and (i-nodeCount-1 < j) :
-                    N2 = self.nodes[j]
-                    dist = math.sqrt(math.pow(N2.point.x - N1.point.x, 2) + math.pow(N2.point.y - N1.point.y, 2))
-                    E = Edge(N1,N2,dist)
-                    self.addEdge(E)
-
+        i = 0
+        for lineIdx in range(nodeCount+1, nodeCount*2+1) :
+            line = readOut[lineIdx].replace('\n','').split(' ')
+            for j in range(nodeCount):
+                if j != i and line[j]=='1':
+                    self.nodes[i].addAdjNode(self.nodes[j].name)
+            i += 1
         f.close()
+
+    def AStar(self, srcNodeName, goalNodeName):
+        ## PriorityQueue elements : (cost,currentNodeName,visitedNode)
+        queue = PriorityQueue()
+
+        ## PriorityQueue initialization (using start node)
+        temptup = (self.calculateDistance(srcNodeName,goalNodeName),srcNodeName,[srcNodeName])
+        queue.enqueue(temptup)
+
+        ree = 1
+        while len(queue)>0 and queue.queue[0][1] != goalNodeName:
+            currentNode = queue.dequeue() # (cost,currentNodeName,visitedNode) - (float, string, [string])
+
+            currentAccCost = currentNode[0]
+            node = self.getNode(currentNode[1])
+            visitedNode = currentNode[2].copy()
+
+            adjNodeNames = node.adjacentNode
+
+            for adjNodeName in adjNodeNames:
+
+                if (adjNodeName not in visitedNode):
+                    ## create priorityQueue object to be queued into PriorityQueue queue 
+                    # create total cost
+                    tempAccCost = currentAccCost + self.calculateTotalCost(node.name,adjNodeName,goalNodeName)
+                    
+                    # create path(visited node)
+                    tempVisitedNode = visitedNode.copy()
+                    tempVisitedNode.append(adjNodeName)
+
+                    # create temporary tuple
+                    temptup = (tempAccCost,adjNodeName,tempVisitedNode)
+
+                    queue.enqueue(temptup)
+                    
+
+        if len(queue)>0:
+            print("COST = ",end='')
+            print(queue.queue[0][0])
+
+            print("PATH = ",end='')
+            for nodeName in queue.queue[0][2]:
+                print(nodeName,end='-')
+        
+        else: # no path found from Source Node to Goal Node
+            print("NO PATH FOUND")
