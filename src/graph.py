@@ -82,6 +82,11 @@ class Graph :
     #   string : srcNodeName, goalNodeName
     # output : -
     def AStar(self, srcNodeName, goalNodeName):
+        ## PriorityQueue elements as tuple index
+        TOTALCOST_INDEX = 0
+        CURRENTNODENAME_INDEX = 1
+        VISITEDNODE_INDEX = 2
+
         ## PriorityQueue elements : (cost,currentNodeName,visitedNode)
         queue = PriorityQueue()
 
@@ -89,12 +94,12 @@ class Graph :
         temptup = (self.calculateDistance(srcNodeName,goalNodeName),srcNodeName,[srcNodeName])
         queue.enqueue(temptup)
 
-        while len(queue)>0 and queue.queue[0][1] != goalNodeName:
+        while len(queue)>0 and queue.queue[0][CURRENTNODENAME_INDEX] != goalNodeName:
             currentNode = queue.dequeue() # (cost,currentNodeName,visitedNode) - (float, string, [string])
 
-            currentAccCost = currentNode[0]
-            node = self.getNode(currentNode[1])
-            visitedNode = currentNode[2].copy()
+            currentAccCost = currentNode[TOTALCOST_INDEX]
+            node = self.getNode(currentNode[CURRENTNODENAME_INDEX])
+            visitedNode = currentNode[VISITEDNODE_INDEX].copy()
 
             adjNodeNames = node.adjacentNode
 
@@ -116,11 +121,11 @@ class Graph :
                     
         if len(queue)>0: # found path from Source Node to Goal Node
             print("COST = ",end='')
-            print(queue.queue[0][0])
+            print(queue.queue[0][TOTALCOST_INDEX])
 
             print("PATH = ",end='')
-            print(queue.queue[0][2][0],end='')
-            for nodeName in queue.queue[0][2][1:]:
+            print(queue.queue[0][CURRENTNODENAME_INDEX][0],end='')
+            for nodeName in queue.queue[0][VISITEDNODE_INDEX][1:]:
                 print('-'+nodeName,end='')
             print()
         
