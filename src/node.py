@@ -7,12 +7,9 @@ class Node :
         self.adjacentNode = []
 
     # add adjacent node name
-    # input :
+    # input
     #   string : nodeName
     # I.S. : self.adjacentNode == [..]
     # F.S. : self.adjacentNode == [..,nodeName]
     def addAdjNode(self,nodeName):
         self.adjacentNode.append(nodeName)
-
-    def getDistanceToLocation(self, location):
-        self.location.euclidianDist(location)
