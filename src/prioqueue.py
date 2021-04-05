@@ -8,7 +8,7 @@ class PriorityQueue :
         return len(self.queue)
 
     # enqueue tuple to self.queue
-    # input :
+    # input
     #   tuple : tup
     # I.S. : [..]
     # F.S. : [..,tup]
