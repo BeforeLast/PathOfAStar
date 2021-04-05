@@ -6,7 +6,7 @@ class Location :
         self.y = y
 
     # calculate euclidean distance of current location to other location
-    # input :
+    # input
     #   Location : otherLocation
     # output : float
     def euclideanDist(self,otherLocation):
