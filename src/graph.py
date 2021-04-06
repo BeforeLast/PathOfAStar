@@ -22,7 +22,7 @@ class Graph :
     # output : Location
     def getNode(self, nodeName):
         for node in self.nodes:
-            if node.name is nodeName:
+            if node.name == nodeName:
                 return node
         return None
     
@@ -124,7 +124,7 @@ class Graph :
             print(queue.queue[0][TOTALCOST_INDEX])
 
             print("PATH = ",end='')
-            print(queue.queue[0][CURRENTNODENAME_INDEX][0],end='')
+            print(queue.queue[0][VISITEDNODE_INDEX][0],end='')
             for nodeName in queue.queue[0][VISITEDNODE_INDEX][1:]:
                 print('-'+nodeName,end='')
             print()
