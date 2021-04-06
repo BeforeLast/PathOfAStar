@@ -80,7 +80,7 @@ class Graph :
     # get total cost from srcNodeName to trgNodeName with the goal goalNodeName
     # input 
     #   string : srcNodeName, goalNodeName
-    # output : -
+    # output : array of string, float, boolean
     def AStar(self, srcNodeName, goalNodeName):
         ## PriorityQueue elements as tuple index
         TOTALCOST_INDEX = 0
@@ -118,16 +118,26 @@ class Graph :
                     temptup = (tempAccCost,adjNodeName,tempVisitedNode)
 
                     queue.enqueue(temptup)
+
+        pathNames = []
+        dist = 0.0
+        success = True
                     
         if len(queue)>0: # found path from Source Node to Goal Node
             print("COST = ",end='')
             print(queue.queue[0][TOTALCOST_INDEX])
+            dist = queue.queue[0][TOTALCOST_INDEX]
 
             print("PATH = ",end='')
             print(queue.queue[0][VISITEDNODE_INDEX][0],end='')
+            pathNames.append(queue.queue[0][VISITEDNODE_INDEX][0])
             for nodeName in queue.queue[0][VISITEDNODE_INDEX][1:]:
                 print('-'+nodeName,end='')
+                pathNames.append(nodeName)
             print()
         
         else: # no path found from Source Node to Goal Node
             print("NO PATH FOUND")
+            success = False
+
+        return pathNames, dist, success
