@@ -7,7 +7,7 @@
     var pointCount = 0;
 
     // receive the points pass
-    var points = JSON.parse('{{ points|tojson }}');
+    var points = JSON.parse('{{ coords|tojson }}');
     for (let i=0; i<points.length; i++){
         sumLat += points[i][0];
         sumLng += points[i][1];
@@ -19,7 +19,7 @@
     var avgLng = sumLng/pointCount;
 
     // receive the path names
-    var names = JSON.parse('{{ paths|tojson }}');
+    var names = JSON.parse('{{ names|tojson }}');
 
     // create a new group
     var group = new H.map.Group();
@@ -112,8 +112,8 @@
                     Documents used : 
                 </div>
                 <br>
-                <p>Lokasi asal : {{paths[0]}}</p>
-                <p>Lokasi tujuan : {{paths[(paths|length)-1]}}</p>
+                <p>Lokasi asal : {{names[0]}}</p>
+                <p>Lokasi tujuan : {{names[(names|length)-1]}}</p>
                 <p>Jarak total yang ditempuh  : {{dist}}</p>
             </div>
         </article>
