@@ -4,6 +4,8 @@ from location import *
 from node import *
 from prioqueue import *
 
+EARTH_CIRCUMFERENCE = 40007863
+
 class Graph :
     def __init__(self) :
         self.nodes = []
@@ -122,7 +124,11 @@ class Graph :
             currentNode = queue.dequeue() # (cost,currentNodeName,visitedNode) - (float, string, [string])
 
             currentAccCost = currentNode[TOTALCOST_INDEX]
+            print("CURRENT COST  ", currentAccCost)
             node = self.getNode(currentNode[CURRENTNODENAME_INDEX])
+
+            currentAccCost -= self.calculateDistance(node.name,goalNodeName)
+
             visitedNode = currentNode[VISITEDNODE_INDEX].copy()
 
             adjNodeNames = node.adjacentNode
@@ -164,4 +170,4 @@ class Graph :
             print("NO PATH FOUND")
             success = False
 
-        return pathNames, dist, success
+        return pathNames, (dist/360) * EARTH_CIRCUMFERENCE, success
