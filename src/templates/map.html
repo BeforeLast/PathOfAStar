@@ -2,41 +2,70 @@
 {% block content %}
 <div style="width: 640px; height: 480px" id="mapContainer"></div>
 <script>
-    var Lat = [];
-    var Lng = [];
-    var avgLat = 0.0;
-    var avgLng = 0.0;
+    var sumLat = 0.0;
+    var sumLng = 0.0;
     var pointCount = 0;
 
     // receive the points pass
-    var points = '{{ points|tojson|safe }}'.replace('[[','').replaceAll('[','').replace(']]','').split("], ");
-    points.forEach(iteratePoints);
-    function iteratePoints(val, idx, arr){
-        var LatLng = val.split(", ");
-        Lat.push(LatLng[0]);
-        Lng.push(LatLng[1]);
-
-        avgLat += parseFloat(LatLng[0]);
-        avgLng += parseFloat(LatLng[1]);
+    var points = JSON.parse('{{ points|tojson }}');
+    for (let i=0; i<points.length; i++){
+        sumLat += points[i][0];
+        sumLng += points[i][1];
         pointCount++;
     }
 
     // count the avg coordinate to center to
-    avgLat /= pointCount;
-    avgLng /= pointCount;
+    var avgLat = sumLat/pointCount;
+    var avgLng = sumLng/pointCount;
 
-    // draw the line
+    // receive the path names
+    var names = JSON.parse('{{ paths|tojson }}');
+
+    // create a new group
+    var group = new H.map.Group();
+
+    // add a marker
+    function addMarkerToGroup(group, coordinate, html) {
+        var marker = new H.map.Marker(coordinate);
+        // add custom data to the marker
+        marker.setData(html);
+        group.addObject(marker);
+    }
+
+    // add an info bubble for each marker
+    function addInfoBubble(map){
+        // add the group to the map
+        map.addObject(group);
+
+        // add 'tap' event listener, that opens info bubble, to the group
+        group.addEventListener('tap', function (evt) {
+            // event target is the marker itself, group is a parent event target
+            // for all objects that it contains
+            var bubble =  new H.ui.InfoBubble(evt.target.getGeometry(), {
+            // read custom data
+            content: evt.target.getData()
+            });
+            // show info bubble
+            ui.addBubble(bubble);
+        }, false);
+    }
+
+    // add a polyline to the map
     function addPolylineToMap(map) {
         var lineString = new H.geo.LineString();
         for (let i = 0; i<pointCount; i++){
-            lineString.pushPoint({lat:Lat[i], lng:Lng[i]});
-            var marker = new H.map.Marker({lat:Lat[i], lng:Lng[i]});
-            map.addObject(marker);
+            lineString.pushPoint({lat:points[i][0], lng:points[i][1]});
+            // add a marker to the group
+            addMarkerToGroup(group, {lat:points[i][0], lng:points[i][1]}, names[i]);
         }
 
+        // draw the line
         map.addObject(new H.map.Polyline(
             lineString, { style: { lineWidth: 4 }}
         ));
+
+        // call to add the info bubble
+        addInfoBubble(map);
     }
 
     // init the platform
@@ -83,8 +112,8 @@
                     Documents used : 
                 </div>
                 <br>
-                <p>Lokasi asal : {{start}}</p>
-                <p>Lokasi tujuan : {{end}}</p>
+                <p>Lokasi asal : {{paths[0]}}</p>
+                <p>Lokasi tujuan : {{paths[(paths|length)-1]}}</p>
                 <p>Jarak total yang ditempuh  : {{dist}}</p>
             </div>
         </article>
