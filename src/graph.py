@@ -75,6 +75,7 @@ class Graph :
     # I.S. : self.nodes == [..]
     # F.S. : self.nodes == [..,newnode1,newnode2,..,newnodeN]
     def fillGraphWithFile(self, fileName) :
+        self.nodes = []
         f = open(fileName,"r")
         readOut = f.readlines()
 
