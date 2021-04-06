@@ -1,47 +1,39 @@
 from graph import *
-from flask import Flask , render_template
+from flask import Flask , render_template , request
 # import matplotlib.pyplot as plt
 # import networkx as nx
 
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'thisisjustsomesecretkey'
+
 G = Graph()
-G.fillGraphWithFile("../test/test6.txt")
+gInfo = []
+@app.route('/', methods=['GET', 'POST'])
+def main() :
+    return render_template("map.html", names = [], coords = [], dist = 0 , graphInfo = [])
 
-# Gnx = nx.Graph()
-# for node in G.nodes :
-#     Gnx.add_node(node.name)
+@app.route('/load-file/', methods=['GET', 'POST'])
+def loadFile() :
+    fileNamePath = request.form['test']
+    print(fileNamePath)
+    G.fillGraphWithFile(fileNamePath)
+    gInfo = G.toArray()
+    # print(G.toArray())
+    return render_template("map.html", names = [], coords = [], dist = 0 , graphInfo = gInfo)
 
-# nx.draw(Gnx, with_labels=True, font_weight='bold')
-# plt.show()
+@app.route('/calculate-route/', methods=['GET', 'POST'])
+def calculateRoute(startNode,goalNode):
+    pathNames, pathDist, pathSuccess = G.AStar(startNode,goalNode)
+    if (pathSuccess) :
+        pathCoords = []
+        for i in range(len(pathNames)) :
+            currLoc = []
+            currLoc.append(G.getNodeLoc(pathNames[i]).x)
+            currLoc.append(G.getNodeLoc(pathNames[i]).y)
+            pathCoords.append(currLoc)
+        return render_template("map.html", coords = pathCoords, dist = pathDist , graphInfo = gInfo)
+    else:
+        return render_template("map.html", coords = [], dist = 0 , graphInfo = gInfo)
 
-# show the list of node names
-print("Nama-nama node yang terdefinisi di graf :")
-for node in G.nodes :
-    print(node.name)
-
-# input the start and end nodes
-print("---------------------------------")
-startNode = input("Masukkan nama node asal : ")
-endNode = input("Masukkan nama node tujuan : ")
-
-# get the pathNames, pathCoords, pathDist
-print("--------- HASIL A* PATH ---------")
-pathNames, pathDist, pathSuccess = G.AStar(startNode,endNode)
-if (pathSuccess) :
-    pathCoords = []
-    for i in range(len(pathNames)) :
-        currLoc = []
-        currLoc.append(G.getNodeLoc(pathNames[i]).x)
-        currLoc.append(G.getNodeLoc(pathNames[i]).y)
-        pathCoords.append(currLoc)
-
-    # initiate flask
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'thisisjustsomesecretkey'
-
-    @app.route('/', methods=['GET', 'POST'])
-    def main() :
-        return render_template("map.html", names = pathNames, coords = pathCoords, dist = pathDist)
-
-    # run the flask
-    if __name__ == '__main__':
-        app.run(debug=False)
+if __name__ == '__main__':
+    app.run(debug=True)
