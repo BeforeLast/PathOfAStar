@@ -1,23 +1,47 @@
 from graph import *
-# from flask import Flask , render_template
+from flask import Flask , render_template
+# import matplotlib.pyplot as plt
+# import networkx as nx
 
 G = Graph()
-G.fillGraphWithFile("../test/test2.txt")
+G.fillGraphWithFile("../test/test6.txt")
 
-G.AStar("KantorPos","GrandYogyaKepatihan")
+# Gnx = nx.Graph()
+# for node in G.nodes :
+#     Gnx.add_node(node.name)
 
-# # initiate flask
-# app = Flask(__name__)
-# app.config['SECRET_KEY'] = 'thisisjustsomesecretkey'
+# nx.draw(Gnx, with_labels=True, font_weight='bold')
+# plt.show()
 
-# @app.route('/', methods=['GET', 'POST'])
-# def displayMap() :
-#     # this should be the result of the pathing, to pass to js
-#     points = [[3.5898427621175326, 98.6483296391956], [3.5988800872318683, 98.65249242731477], [3.60012217704572, 98.64172067661467], [3.6062845004961233, 98.65024132694683]]
-#     paths = ["Rumah Bije", "SinggahA", "SinggahB", "Rumah Doi"]
-#     distance = 6969.69
-#     return render_template("map.html", points = points, paths = paths, dist = distance)
+# show the list of node names
+print("Nama-nama node yang terdefinisi di graf :")
+for node in G.nodes :
+    print(node.name)
 
-# # run the flask
-# if __name__ == '__main__':
-#     app.run(debug=False)
+# input the start and end nodes
+print("---------------------------------")
+startNode = input("Masukkan nama node asal : ")
+endNode = input("Masukkan nama node tujuan : ")
+
+# get the pathNames, pathCoords, pathDist
+print("--------- HASIL A* PATH ---------")
+pathNames, pathDist, pathSuccess = G.AStar(startNode,endNode)
+if (pathSuccess) :
+    pathCoords = []
+    for i in range(len(pathNames)) :
+        currLoc = []
+        currLoc.append(G.getNodeLoc(pathNames[i]).x)
+        currLoc.append(G.getNodeLoc(pathNames[i]).y)
+        pathCoords.append(currLoc)
+
+    # initiate flask
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'thisisjustsomesecretkey'
+
+    @app.route('/', methods=['GET', 'POST'])
+    def main() :
+        return render_template("map.html", names = pathNames, coords = pathCoords, dist = pathDist)
+
+    # run the flask
+    if __name__ == '__main__':
+        app.run(debug=False)
