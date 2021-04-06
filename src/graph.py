@@ -15,6 +15,26 @@ class Graph :
     # F.S. : nodes == [..,node]
     def addNode(self, node) :
         self.nodes.append(node)
+    
+    # convert graph to array
+    # output : [[[nodeName, location],..],[[[edgeSrcLoc.x, edgeSrcLoc.y], [edgeTrgLoc.x, edgeTrgLoc.y]],..]]]
+    def toArray(self):
+        nodeList = []
+        edgeList = []
+        for node in self.nodes:
+            
+            tempNodeArr = [node.name, node.location.x, node.location.y]
+            nodeList.append(tempNodeArr)
+
+            adjNode = node.adjacentNode.copy()
+
+            tempNodeLoc = node.location
+            for adjNodeName in adjNode:
+                tempAdjLoc = self.getNodeLoc(adjNodeName)
+                if ([[tempNodeLoc.x, tempNodeLoc.y],[tempAdjLoc.x,tempAdjLoc.y]] not in edgeList) and ([[tempAdjLoc.x,tempAdjLoc.y],[tempNodeLoc.x, tempNodeLoc.y]] not in edgeList):
+                    edgeList.append([[tempNodeLoc.x, tempNodeLoc.y], [tempAdjLoc.x,tempAdjLoc.y]])
+        
+        return [nodeList,edgeList]
 
     # get node with the name of nodeName
     # input
@@ -82,6 +102,9 @@ class Graph :
     #   string : srcNodeName, goalNodeName
     # output : array of string, float, boolean
     def AStar(self, srcNodeName, goalNodeName):
+        ## Guard
+        if self.getNode(srcNodeName) == None or self.getNode(goalNodeName) == None:
+            return None, None, False
         ## PriorityQueue elements as tuple index
         TOTALCOST_INDEX = 0
         CURRENTNODENAME_INDEX = 1
