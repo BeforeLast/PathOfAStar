@@ -37,7 +37,7 @@
 
             // draw the line
             map.addObject(new H.map.Polyline(
-                lineString, { style: { lineWidth: 2, strokeColor: "rgba(33, 255, 0, 1.0)" }}
+                lineString, { style: { lineWidth: 3, strokeColor: "rgba(33, 255, 0, 1.0)" }}
             ));
         }
 
@@ -57,7 +57,7 @@
                 lineString.pushPoint({lat:edgesInfo[i][0][0], lng:edgesInfo[i][0][1]}); // add src node location
                 lineString.pushPoint({lat:edgesInfo[i][1][0], lng:edgesInfo[i][1][1]}); // add trg node location
                 map.addObject(new H.map.Polyline(
-                    lineString, { style: { lineWidth: 3 , strokeColor: "rgba(0, 113, 255, 1.0)" }}
+                    lineString, { style: { lineWidth: 4 , strokeColor: "rgba(0, 113, 255, 1.0)" }}
                 ));
             }
             // ADD INFO BUBBLE
@@ -65,11 +65,16 @@
         }
 
         function clearMap(){
-            map.removeObjects(map.getObjects())
+            map.removeObjects(map.getObjects());
         }
 
-        // receive the path names
-        // var names = JSON.parse('{{ names|tojson }}');
+        function clearPath(){
+            clearMap();
+            addGraphToMap(map);
+        }
+
+        // receive the route string
+        var route = JSON.parse('{{ route|tojson }}');
         // receive the points pass
         var points = JSON.parse('{{ coords|tojson }}');
         // receive the graph data pass
@@ -91,30 +96,22 @@
 
         // search camera position
         var avgLat = 0.0;
-        var avgLng = 0.0;
-
-        
+        var avgLng = 0.0;        
         if (points.length>0){
             var sumLat = 0.0;
             var sumLng = 0.0;
             for (let i=0; i<points.length; i++){
-                sumLat += points[i][0];
-                sumLng += points[i][1];
+                sumLat += points[i][0]; sumLng += points[i][1];
             }
-            avgLat = sumLat/points.length
-            avgLng = sumLng/points.length
+            avgLat = sumLat/points.length; avgLng = sumLng/points.length;
         } else if (graph.length>0){
             var sumLat = 0.0;
             var sumLng = 0.0;
             var nodeInfo = graph[0];
             for (let i=0; i<nodeInfo.length; i++){
-                console.log(sumLat)
-                console.log(sumLng)
-                sumLat += nodeInfo[i][1];
-                sumLng += nodeInfo[i][2];
+                sumLat += nodeInfo[i][1]; sumLng += nodeInfo[i][2];
             }
-            avgLat = sumLat/nodeInfo.length;
-            avgLng = sumLng/nodeInfo.length;
+            avgLat = sumLat/nodeInfo.length; avgLng = sumLng/nodeInfo.length;
         }
 
         // instantiate (and display) a map object:
@@ -136,9 +133,10 @@
 
         // Create the default UI components
         var ui = H.ui.UI.createDefault(map, layer);
-
+        
+        clearMap();
         addGraphToMap(map);
-        // addResultPath(map);
+        if (points.length>0) addResultPath(map);
     </script>
 </div>
 
@@ -151,33 +149,48 @@
       <p class='text-muted'>Berikut adalah beberapa informasi mengenai path yang terbentuk
         <article class="media content-section">
             <div class="media-body">
-                <button onclick="clearMap()"> Clear graph </button>
-                <form action="/load-file/" method="POST">
-                    <input type="text" name="test">
-                    <input type="submit" value="Use File">
-                </form>
-                <!-- <div class="article-metadata">
-                    Documents used : 
+                <br> <!-----------------Node Option-------------------->
+                <div>
+                    <form action="/load-file/" method="POST">
+                        <input type="text" name="test">
+                        <input type="submit" value="Use File">
+                    </form>
+                </div>
+                <br> <!-----------------Node Option-------------------->
+                <div>
+                    <form action="/calculate-route/" method="POST">
+                        <div>
+                            <label for="startNodeName">Lokasi asal :</label>
+                            <select id="startNodeName" name = "startNodeName">
+                                {% for nodeName in graphInfo[0] %}
+                                    <option value={{nodeName[0]}}>{{nodeName[0]}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="goalNodeName">Lokasi tujuan :</label>
+                            <select id="goalNodeName" name = "goalNodeName">
+                                {% for nodeName in graphInfo[0] %}
+                                    <option value={{nodeName[0]}}>{{nodeName[0]}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <input type="submit" value="Find Route">
+                    </form>
+
                 </div>
                 <br>
                 <div>
-                    <label for="srcNd">Lokasi asal :</label>
-                    <select id="srcNd">
-                        
-                        <option value="a">Volvo</option>
-                        <option value="saBab">Saab</option>
-                        <option value="opel">Opel</option>
-                        <option value="audi">Audi</option>
-                    </select>
+                    <!-- <p>Total cost : {{dist}}</p>
+                    <p>Total cost : {{dist}}</p> -->
+                    <p>Route : {{route}}</p>
+                    <p>Total cost : {{dist}}</p>
                 </div>
 
-                <div>
-                    <p>Lokasi tujuan : {{names[(names|length)-1]}}</p>
-                </div>
-
-                <div>
-                    <p>Jarak total yang ditempuh  : {{dist}}</p>
-                </div>                 -->
+                <br> <!----------------------------------------------------------------->
+                <button onclick="clearPath()"> Clear generated path </button>
             </div>
         </article>
       </p>
