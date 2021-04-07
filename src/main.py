@@ -22,7 +22,7 @@ def loadFile() :
     if (len(fileNamePath)==0):
         return printDefaultTemplate()
     print("SELECTED FILE =",fileNamePath)
-    G.fillGraphWithFile(fileNamePath)
+    G.fillGraphWithFile("../test/" + fileNamePath)
     gInfo = G.toArray()
     return printDefaultTemplate(gInfo)
 
