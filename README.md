@@ -16,10 +16,10 @@ Algoritma A* adalah algoritma yang mencari jalur dalam suatu graf dengan diberik
 2. Pindah ke direktori src dari project ini
 3. Masukkan perintah <code>python main.py</code> ke terminal
 4. Tunggu sampai _Flask_ selesai berjalan dan buka link _localhost_ yang muncul
-5. Pada halaman web, ketik nama dari test file yang akan digunakan
-6. Masukkan nama lokasi awal dan tujuan
+5. Pada halaman web, ketik nama dari test file yang akan digunakan, seperti _test1.txt_
+6. Pilih nama lokasi awal dan tujuan dari dropdown yang telah ada
 7. Klik tombol _Find Route_
-8. Jalur akan muncul ditandai dengan garis hijau
+8. Jalur yang dihitung dengan Algoritma A* akan muncul ditandai dengan garis hijau
 
 ## Features
 Berikut adalah fitur-fitur yang terdapat dalam program.
